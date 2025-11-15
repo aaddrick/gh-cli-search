@@ -19,7 +19,7 @@
 
 **Description:** Authenticate with GitHub
 
-**User Request:** "How do I authenticate gh CLI?"
+**User Request:** "What command do I run to authenticate gh CLI?"
 
 **Expected Criteria:**
 - Command: `gh auth login`
@@ -34,7 +34,7 @@
 
 **Description:** Verify authentication status
 
-**User Request:** "How do I check if I'm authenticated?"
+**User Request:** "What command checks if I'm authenticated with gh?"
 
 **Expected Criteria:**
 - Command: `gh auth status`
@@ -124,7 +124,7 @@
 
 **Description:** Handle network connectivity issues
 
-**User Request:** "I can't connect to github.com"
+**User Request:** "I can't connect to github.com. What commands should I run to diagnose the issue?"
 
 **Expected Criteria:**
 - Test connectivity: `ping github.com`

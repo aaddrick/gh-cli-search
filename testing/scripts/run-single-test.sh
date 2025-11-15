@@ -15,7 +15,16 @@ fi
 
 # Execute Claude with ONLY the user request
 # No test criteria, no hints - authentic skill application test
-claude -p "${USER_REQUEST}" \
+# Minimal tools to prevent slowdowns and hanging
+# Read: Required for loading skills
+# Skill: Required for using gh-cli-search skills
+# bypassPermissions: Prevents interactive prompts
+# NO episodic memory: Add explicit instruction to skip it
+claude -p "IMPORTANT: Be concise. Do not search episodic memory. Do not explain - just provide the command.
+
+USER REQUEST: ${USER_REQUEST}
+
+Provide ONLY the gh command in a code block. No explanations." \
 --output-format text \
---allowedTools "Read" \
---permission-mode acceptAll
+--allowedTools "Read,Skill" \
+--permission-mode bypassPermissions
