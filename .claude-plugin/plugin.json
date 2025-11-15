@@ -1,0 +1,25 @@
+{
+  "name": "gh-cli-search",
+  "version": "1.0.0",
+  "description": "Comprehensive GitHub CLI search commands and troubleshooting. Provides skills for gh search code, commits, issues, PRs, and repos with proper syntax, quoting, and platform-specific handling.",
+  "author": {
+    "name": "Aaddrick Williams",
+    "url": "https://github.com/aaddrick"
+  },
+  "homepage": "https://github.com/aaddrick/gh-cli-search",
+  "repository": "https://github.com/aaddrick/gh-cli-search",
+  "license": "MIT",
+  "keywords": [
+    "github",
+    "gh",
+    "cli",
+    "search",
+    "git",
+    "code-search",
+    "issues",
+    "pull-requests",
+    "repositories",
+    "commits"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
