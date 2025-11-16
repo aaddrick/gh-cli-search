@@ -1,22 +1,42 @@
 ---
 name: gh-search-prs
-description: Use when searching GitHub pull requests - provides syntax for filtering by draft status, merge status, review state, CI checks, branches, and all standard PR attributes
+description: Use when searching GitHub pull requests ACROSS REPOSITORIES or organizations - provides syntax for filtering by draft status, merge status, review state, CI checks, branches. For current repo PRs, use gh pr list instead.
 ---
 
 # GitHub CLI: Search Pull Requests
 
 ## Overview
 
-Search for pull requests on GitHub using `gh search prs`. Includes PR-specific filters like draft status, merge state, review status, and CI checks.
+Search for pull requests **across GitHub repositories** using `gh search prs`. Includes PR-specific filters like draft status, merge state, review status, and CI checks.
 
-## When to Use
+## ⚠️ CRITICAL: Search vs List Commands
 
-Use this skill when:
-- Finding PRs by draft, merge, or review status
-- Searching PRs by branch names (base or head)
-- Filtering by CI check status
-- Finding PRs by labels, state, or assignees
-- Need to exclude certain results (requires `--` flag)
+**`gh search prs`** - GitHub-wide search (THIS SKILL):
+- Searches across **multiple repositories** or organizations
+- Searches in **specific repos outside your current directory**
+- Uses GitHub's search query syntax with qualifiers
+- Examples: "Find draft PRs in kubernetes repos", "Search for approved PRs in microsoft org"
+
+**`gh pr list`** - Current repository only (NOT THIS SKILL):
+- Lists PRs in **your current working directory's repo**
+- Uses simple flag-based filtering
+- Examples: "Show my PRs in this repo", "List open PRs here"
+
+**When user says "my PRs" or "PRs here" → Use `gh pr list` (NOT this skill)**
+**When user specifies repo/org or cross-repo search → Use `gh search prs` (THIS skill)**
+
+## When to Use This Skill
+
+Use this skill when the user explicitly indicates:
+- Searching across **multiple repositories or organizations**
+- Searching in a **specific repo** (e.g., "in kubernetes/kubernetes")
+- Cross-GitHub searches (e.g., "all draft PRs across the organization")
+- Complex queries needing search qualifiers (e.g., "approved PRs with >10 comments in golang repos")
+
+**DO NOT use this skill when:**
+- User asks about "PRs in this repo" or "my PRs here"
+- No repo/org is specified and context is clearly current repository
+- Use `gh pr list` for current repo operations instead
 
 ## Syntax
 
@@ -106,19 +126,105 @@ gh search prs [<query>] [flags]
 
 `assignees`, `author`, `authorAssociation`, `body`, `closedAt`, `commentsCount`, `createdAt`, `id`, `isDraft`, `isLocked`, `isPullRequest`, `labels`, `number`, `repository`, `state`, `title`, `updatedAt`, `url`
 
+## Exclusion Syntax (Critical!)
+
+When using inline query exclusions (negations with `-`), you MUST use the `--` separator:
+
+✅ Correct: `gh search prs -- "search-terms -qualifier:value"`
+❌ Wrong: `gh search prs "search-terms" --flag=-value`
+❌ Wrong: `gh search prs "search-terms" --flag=!value`
+❌ Wrong: `gh search prs --label=-WIP`
+
+**Examples:**
+- `gh search prs -- "feature -label:draft"` (exclude label)
+- `gh search prs -- "fix -is:draft"` (exclude draft PRs)
+- `gh search prs -- "deploy -author:bot"` (exclude author)
+- `gh search prs -- "security -review:changes_requested"` (exclude review status)
+
+**Why the `--` separator is required:**
+The `--` tells the shell to stop parsing flags and treat everything after it as arguments. Without it, `-qualifier:value` inside quotes may be misinterpreted.
+
 ## Critical Syntax Rules
 
-### 1. Exclusions Require `--`
+### When to Use Flag Syntax vs Query Syntax
 
-**Unix/Linux/Mac:**
+**Decision Tree:**
+```
+Does your search include:
+  - Any exclusions (NOT, minus, without, except)?  → Use Query Syntax with `--`
+  - Complex boolean logic (OR, AND)?              → Use Query Syntax with `--`
+
+Otherwise:
+  - Simple positive filters only?                  → Use Flag Syntax
+```
+
+**Flag Syntax** (for positive filters):
 ```bash
-gh search prs -- "security -label:duplicate"
+gh search prs "refactor" --draft --state open
 ```
 
-**PowerShell:**
-```powershell
-gh --% search prs -- "security -label:duplicate"
+**Query Syntax with `--`** (required for exclusions):
+```bash
+gh search prs -- "refactor -label:wip -is:draft"
 ```
+
+**⚠️ NEVER mix both syntaxes in a single command!**
+
+### 1. Exclusions and Negations
+
+**CRITICAL:** When excluding results, you MUST use query syntax with the `--` separator.
+
+#### Exclusion Syntax Rules:
+1. Use the `--` separator before your query
+2. Use `-qualifier:value` format (dash prefix for negation)
+3. Quote the entire query string
+
+#### Examples:
+
+**Single exclusion:**
+```bash
+# Exclude specific label
+gh search prs -- "refactor -label:wip"
+
+# Exclude draft PRs
+gh search prs -- "feature -is:draft"
+```
+
+**Multiple exclusions:**
+```bash
+# Exclude multiple labels
+gh search prs -- "bug -label:wip -label:blocked"
+
+# Exclude draft PRs and specific review status
+gh search prs -- "security -is:draft -review:changes_requested"
+```
+
+**Combine with positive filters using flags:**
+```bash
+# Wrong - mixing syntaxes:
+gh search prs "fix" --state open -label:wip  # ❌
+
+# Correct - use query syntax for everything when excluding:
+gh search prs -- "fix state:open -label:wip"  # ✅
+```
+
+**PowerShell exclusions:**
+```powershell
+# Use --% to prevent PowerShell parsing
+gh --% search prs -- "refactor -label:wip"
+```
+
+#### Common Exclusion Patterns:
+
+| User Request | Command |
+|--------------|---------|
+| "Find PRs but not drafts" | `gh search prs -- "feature -is:draft"` |
+| "PRs excluding specific label" | `gh search prs -- "bug -label:wip"` |
+| "PRs not from bot authors" | `gh search prs -- "update -author:dependabot -author:renovate"` |
+| "PRs excluding failed checks" | `gh search prs -- "deploy -status:failure"` |
+| "PRs not targeting main branch" | `gh search prs -- "feature -base:main"` |
+| "PRs excluding review status" | `gh search prs -- "fix -review:changes_requested"` |
+| "PRs not merged yet" | `gh search prs -- "feature -is:merged"` |
 
 ### 2. Special Values
 
@@ -159,61 +265,64 @@ gh search prs "performance" --comments ">5"
 
 ## Common Use Cases
 
-**Find your open PRs:**
+**Find your open PRs across all of GitHub:**
 ```bash
 gh search prs --author @me --state open
 ```
 
-**Find PRs awaiting your review:**
+**Find PRs awaiting your review in an organization:**
 ```bash
-gh search prs --review-requested @me --state open
+gh search prs --review-requested @me --state open --owner kubernetes
 ```
 
-**Find draft PRs:**
+**Find draft PRs in a specific repo:**
 ```bash
-gh search prs --draft --repo owner/repo
+gh search prs --draft --repo microsoft/vscode
 ```
 
-**Find merged PRs in date range:**
+**Find merged PRs in date range across an org:**
 ```bash
-gh search prs --merged --merged-at "2024-01-01..2024-12-31"
+gh search prs --merged --merged-at "2024-01-01..2024-12-31" --owner golang
 ```
 
-**Find PRs with failing checks:**
+**Find PRs with failing checks in specific repos:**
 ```bash
-gh search prs --checks failure --state open
+gh search prs --checks failure --state open --repo cli/cli
 ```
 
-**Find approved PRs not yet merged:**
+**Find approved PRs not yet merged in a repo:**
 ```bash
-gh search prs --review approved --state open --repo owner/repo
+gh search prs --review approved --state open --repo kubernetes/kubernetes
 ```
 
-**Find PRs by base branch:**
+**Find PRs by base branch in an organization:**
 ```bash
-gh search prs --base main --state open
+gh search prs --base main --state open --owner github
 ```
 
-**Find PRs with specific head branch:**
+**Find PRs with specific head branch pattern across repos:**
 ```bash
-gh search prs --head feature-* --state open
+gh search prs --head feature-* --state open --language go
 ```
 
-**Exclude specific labels:**
+**Exclude specific labels in cross-repo search:**
 ```bash
-gh search prs -- "refactor -label:wip -label:draft"
+gh search prs -- "refactor -label:wip -label:draft" --owner myorg
 ```
 
-**Find stale PRs:**
+**Find stale PRs across multiple repos:**
 ```bash
-gh search prs --state open --updated "<2024-01-01"
+gh search prs --state open --updated "<2024-01-01" --owner rust-lang
 ```
 
 ## Common Mistakes
 
 | Mistake | Problem | Fix |
 |---------|---------|-----|
+| `--label="NOT wip"` or `--draft=-true` | Flag syntax doesn't support negation | Use query: `-- "-label:wip"` or `-- "-is:draft"` |
 | `gh search prs fix -label:wip` | `-label` interpreted as flag | Use `--`: `-- "fix -label:wip"` |
+| `"fix NOT label:wip"` | `NOT` keyword doesn't work | Use `-`: `-- "fix -label:wip"` |
+| Mixing syntaxes: `--draft "fix -label:wip"` | Can't mix flags with query qualifiers | Use query for all: `-- "fix is:draft -label:wip"` |
 | `--review-requested @username` | Invalid `@` prefix | Use `@me` or drop `@`: `--review-requested username` |
 | Not quoting comparisons | Shell interprets `>` | Quote: `--comments ">5"` |
 | `label:"needs review"` outside quotes | Shell parsing error | Quote query: `'label:"needs review"'` |

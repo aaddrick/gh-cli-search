@@ -4,12 +4,12 @@
 
 **Description:** Find draft PRs in a repository
 
-**User Request:** "Find all draft pull requests in cli/cli repo"
+**User Request:** "Search for draft pull requests about API changes across GitHub repositories"
 
 **Expected Criteria:**
 - Uses `gh search prs`
-- Draft filter: `--draft` flag
-- Repository: `--repo cli/cli`
+- Draft filter: `--draft` flag OR query includes `is:draft` (both are valid)
+- Query contains API changes or related keywords
 
 **Platform:** All
 
@@ -19,7 +19,7 @@
 
 **Description:** Find PRs awaiting your review
 
-**User Request:** "Find open PRs where my review is requested"
+**User Request:** "Find open PRs where my review is requested across all repositories"
 
 **Expected Criteria:**
 - Review requested: `--review-requested @me`
@@ -34,11 +34,11 @@
 
 **Description:** Find merged PRs within date range
 
-**User Request:** "Find PRs merged in 2024"
+**User Request:** "Find PRs merged in 2024 across all of GitHub"
 
 **Expected Criteria:**
-- Merged flag: `--merged`
-- Merged date: `--merged-at "2024-01-01..2024-12-31"`
+- Merged status: `--merged` flag OR query includes `is:merged` (both are valid)
+- Date range: `--merged-at "2024-01-01..2024-12-31"` OR query includes `merged:2024-01-01..2024-12-31` (both are valid)
 - ISO8601 date format
 - Range with `..`
 
@@ -50,7 +50,7 @@
 
 **Description:** Find approved PRs not yet merged
 
-**User Request:** "Find approved PRs that are still open"
+**User Request:** "Find approved PRs that are still open across GitHub repos"
 
 **Expected Criteria:**
 - Review filter: `--review approved`
@@ -65,7 +65,7 @@
 
 **Description:** Find PRs with failing checks
 
-**User Request:** "Find open PRs with failing CI checks"
+**User Request:** "Find open PRs with failing CI checks across all repos"
 
 **Expected Criteria:**
 - Checks filter: `--checks failure`
@@ -80,7 +80,7 @@
 
 **Description:** Find PRs targeting specific branch
 
-**User Request:** "Find PRs targeting main branch"
+**User Request:** "Find PRs targeting main branch across repositories"
 
 **Expected Criteria:**
 - Base filter: `--base main` OR `-B main`
@@ -94,7 +94,7 @@
 
 **Description:** Find PRs from specific branch
 
-**User Request:** "Find PRs from feature-auth branch"
+**User Request:** "Find PRs from feature-auth branch across GitHub"
 
 **Expected Criteria:**
 - Head filter: `--head feature-auth` OR `-H feature-auth`
@@ -108,11 +108,11 @@
 
 **Description:** Exclude PRs with specific labels
 
-**User Request:** "Find PRs NOT labeled as WIP"
+**User Request:** "Find PRs NOT labeled as WIP across all repos"
 
 **Expected Criteria:**
 - Uses `--` flag before query
-- Query includes `-label:wip`
+- Query includes `-label:wip` or `-label:WIP` (case-insensitive label matching)
 - Entire query quoted
 - Format: `gh search prs -- "query -label:wip"`
 
@@ -122,14 +122,14 @@
 
 ## Test 9: Author and State
 
-**Description:** Find your open PRs
+**Description:** Find open PRs by specific author
 
-**User Request:** "Find my open pull requests"
+**User Request:** "Find open pull requests authored by torvalds across all of GitHub"
 
 **Expected Criteria:**
-- Author: `--author @me`
+- Author: `--author torvalds`
 - State: `--state open`
-- Uses `@me` special value
+- No `@` prefix on username
 
 **Platform:** All
 
@@ -139,7 +139,7 @@
 
 **Description:** Exclude multiple labels
 
-**User Request:** "Find PRs NOT labeled as draft or wip"
+**User Request:** "Find PRs NOT labeled as draft or wip across GitHub"
 
 **Expected Criteria:**
 - Uses `--` flag
@@ -155,7 +155,7 @@
 
 **Description:** Find PRs reviewed by specific user
 
-**User Request:** "Find PRs reviewed by octocat"
+**User Request:** "Find PRs reviewed by octocat across all repositories"
 
 **Expected Criteria:**
 - Reviewed by: `--reviewed-by octocat`
@@ -170,7 +170,7 @@
 
 **Description:** Filter by comment activity
 
-**User Request:** "Find highly discussed PRs with over 20 comments"
+**User Request:** "Find highly discussed PRs with over 20 comments across repos"
 
 **Expected Criteria:**
 - Comments filter: `--comments ">20"`
@@ -185,7 +185,7 @@
 
 **Description:** Search only in PR titles
 
-**User Request:** "Find PRs with security in the title"
+**User Request:** "Find PRs with security in the title across GitHub"
 
 **Expected Criteria:**
 - Query: `"security in:title"` OR
@@ -200,7 +200,7 @@
 
 **Description:** Label with spaces needs inner quotes
 
-**User Request:** "Find PRs labeled as 'needs review'"
+**User Request:** "Find PRs labeled as 'needs review' across all repos"
 
 **Expected Criteria:**
 - Label syntax: `label:"needs review"`
@@ -215,7 +215,7 @@
 
 **Description:** PowerShell requires `--%` for exclusions
 
-**User Request:** "On PowerShell, find PRs NOT labeled as draft"
+**User Request:** "On PowerShell, find PRs NOT labeled as draft across GitHub"
 
 **Expected Criteria:**
 - Command starts with `gh --%`

@@ -20,7 +20,11 @@ fi
 # Skill: Required for using gh-cli-search skills
 # bypassPermissions: Prevents interactive prompts
 # NO episodic memory: Add explicit instruction to skip it
-claude -p "IMPORTANT: Be concise. Do not search episodic memory. Do not explain - just provide the command.
+claude -p "CRITICAL INSTRUCTIONS:
+1. Identify which gh-cli-search skill is needed: gh-search-code, gh-search-issues, gh-search-prs, gh-search-repos, gh-search-commits, or gh-cli-setup
+2. Use the Skill tool to load that skill
+3. Follow the skill's documentation to generate the correct command
+4. Do not search episodic memory
 
 USER REQUEST: ${USER_REQUEST}
 

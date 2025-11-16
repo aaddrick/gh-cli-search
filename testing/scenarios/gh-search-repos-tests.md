@@ -4,7 +4,7 @@
 
 **Description:** Find popular repositories by stars
 
-**User Request:** "Find Python repos with more than 1000 stars"
+**User Request:** "Find Python repos with more than 1000 stars across GitHub"
 
 **Expected Criteria:**
 - Language: `--language python`
@@ -19,7 +19,7 @@
 
 **Description:** Search by repository topics
 
-**User Request:** "Find repos tagged with machine-learning"
+**User Request:** "Find repos tagged with machine-learning across GitHub"
 
 **Expected Criteria:**
 - Topic filter: `--topic machine-learning`
@@ -33,7 +33,7 @@
 
 **Description:** Multi-word search must be quoted
 
-**User Request:** "Search for 'web framework' repositories"
+**User Request:** "Search for 'web framework' repositories across GitHub"
 
 **Expected Criteria:**
 - Query quoted: `"web framework"`
@@ -47,7 +47,7 @@
 
 **Description:** Exclude archived repositories
 
-**User Request:** "Find active CLI tools, not archived"
+**User Request:** "Find active CLI tools across GitHub, not archived"
 
 **Expected Criteria:**
 - Archived filter: `--archived false`
@@ -61,7 +61,7 @@
 
 **Description:** Find repos with beginner-friendly issues
 
-**User Request:** "Find JavaScript repos with at least 10 good first issues"
+**User Request:** "Find JavaScript repos with at least 10 good first issues across GitHub"
 
 **Expected Criteria:**
 - Language: `--language javascript`
@@ -76,7 +76,7 @@
 
 **Description:** Exclude forked repositories
 
-**User Request:** "Find original projects, not forks"
+**User Request:** "Find original projects across GitHub, not forks"
 
 **Expected Criteria:**
 - Include forks: `--include-forks false`
@@ -90,7 +90,7 @@
 
 **Description:** Search repositories by owner
 
-**User Request:** "Find public repos from microsoft"
+**User Request:** "Search for CLI tool repositories with 1000+ stars across GitHub"
 
 **Expected Criteria:**
 - Owner: `--owner microsoft`
@@ -105,7 +105,7 @@
 
 **Description:** Filter by star count range
 
-**User Request:** "Find repos with 100 to 500 stars"
+**User Request:** "Find repos with 100 to 500 stars across GitHub"
 
 **Expected Criteria:**
 - Stars range: `--stars "100..500"`
@@ -120,7 +120,7 @@
 
 **Description:** Find repos by license
 
-**User Request:** "Find MIT licensed Python projects"
+**User Request:** "Find MIT licensed Python projects across GitHub"
 
 **Expected Criteria:**
 - License: `--license mit`
@@ -135,7 +135,7 @@
 
 **Description:** Exclude specific programming language
 
-**User Request:** "Find CLI tools NOT written in Go"
+**User Request:** "Find CLI tools NOT written in Go across GitHub"
 
 **Expected Criteria:**
 - Uses `--` flag

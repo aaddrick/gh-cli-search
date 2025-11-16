@@ -4,7 +4,7 @@
 
 **Description:** Simple keyword search for code
 
-**User Request:** "Search for TODO comments in JavaScript files"
+**User Request:** "Search for TODO comments in JavaScript files across GitHub"
 
 **Expected Criteria:**
 - Command uses `gh search code`
@@ -20,7 +20,7 @@
 
 **Description:** Search by file extension
 
-**User Request:** "Find code with 'import' in .ts files"
+**User Request:** "Find code with 'import' in .ts files across repos"
 
 **Expected Criteria:**
 - Command uses `gh search code`
@@ -36,9 +36,9 @@
 
 **Description:** Exclude files using `--` flag
 
-**User Request:** "Search for functions but NOT in test files"
+**User Request:** "Search for functions but NOT in test files across GitHub"
 
-**User Request:** "Search for functions but NOT in test files"
+**User Request:** "Search for functions but NOT in test files across GitHub"
 
 **Expected Criteria:**
 - Command includes `--` before query
@@ -54,7 +54,7 @@
 
 **Description:** Exclusion on PowerShell requires `--%`
 
-**User Request:** "On PowerShell, search for class definitions but NOT in test files"
+**User Request:** "On PowerShell, search for class definitions but NOT in test files across repos"
 
 **Expected Criteria:**
 - Command starts with `gh --%`
@@ -70,7 +70,7 @@
 
 **Description:** Multi-word searches must be quoted
 
-**User Request:** "Search for 'error handling' in Python code"
+**User Request:** "Search for 'error handling' in Python code across repositories"
 
 **Expected Criteria:**
 - Query is quoted: `"error handling"`
@@ -85,7 +85,7 @@
 
 **Description:** Search within specific owner's repositories
 
-**User Request:** "Find database config in myorg's repositories"
+**User Request:** "Find database config in kubernetes organization repositories"
 
 **Expected Criteria:**
 - Query includes search term
@@ -104,8 +104,8 @@
 
 **Expected Criteria:**
 - Query is `"panic"`
-- Repository filter: `--repo cli/cli`
-- Uses `-R` or `--repo` flag
+- Repository filter: `-R cli/cli` or `--repo cli/cli` (both equivalent)
+- Accepts either short or long form
 
 **Platform:** All
 
@@ -115,7 +115,7 @@
 
 **Description:** Filter by file size with comparison operators
 
-**User Request:** "Find imports in Python files larger than 100KB"
+**User Request:** "Find imports in Python files larger than 100KB across GitHub"
 
 **Expected Criteria:**
 - Query is `"import"`
@@ -131,7 +131,7 @@
 
 **Description:** Filter by file size range
 
-**User Request:** "Search for TODO in files between 50 and 200 KB"
+**User Request:** "Search for TODO in files between 50 and 200 KB across repos"
 
 **Expected Criteria:**
 - Query is `"TODO"`
@@ -146,7 +146,7 @@
 
 **Description:** Search in specific filename
 
-**User Request:** "Find database config in package.json files"
+**User Request:** "Find database config in package.json files across GitHub"
 
 **Expected Criteria:**
 - Query is `"database"`
@@ -161,7 +161,7 @@
 
 **Description:** Use web flag when regex is needed
 
-**User Request:** "I need to use regex to find function.*test patterns in JavaScript"
+**User Request:** "I need to use regex patterns to search for code in JavaScript (opening in browser is fine)"
 
 **Expected Criteria:**
 - Command includes `-w` or `--web` flag
@@ -194,7 +194,7 @@
 
 **Description:** Search in file contents vs path
 
-**User Request:** "Search for config only in file contents, not paths"
+**User Request:** "Search for config only in file contents, not paths, across GitHub"
 
 **Expected Criteria:**
 - Query is `"config"`
@@ -209,7 +209,7 @@
 
 **Description:** Comparison operators must be quoted
 
-**User Request:** "Find large files over 500KB"
+**User Request:** "Find large files over 500KB across repositories"
 
 **Expected Criteria:**
 - Size filter properly quoted: `--size ">500"`
@@ -224,7 +224,7 @@
 
 **Description:** Request JSON output for parsing
 
-**User Request:** "Search for imports and output as JSON with path and repository fields"
+**User Request:** "Search for imports across GitHub and output as JSON with path and repository fields"
 
 **Expected Criteria:**
 - Query is `"import"`

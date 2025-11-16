@@ -24,11 +24,11 @@ description: SLASH COMMAND ONLY - Do NOT invoke automatically. Only runs via /te
 
 ## Overview
 
-Execute comprehensive test suite for all gh CLI search skills using a **Python test orchestrator**. The script runs 80 tests sequentially, validates responses, and generates detailed reports at multiple levels.
+Execute comprehensive test suite for all gh CLI search skills using a **Python test orchestrator**. The script runs 80 tests in parallel (default: 4 workers), validates responses, and generates detailed reports at multiple levels. After test execution completes, the test-reviewer agent automatically analyzes results and creates REVIEWER-NOTES.md.
 
 **Core Principle:** Fast, efficient test execution with minimal overhead. Each test runs in a fresh Claude session with only the user request (no test criteria leaked).
 
-**Performance:** ~6 seconds per test, ~8 minutes total for 80 tests.
+**Performance:** ~6 seconds per test, ~2-3 minutes total for 80 tests with parallel execution (4 workers).
 
 ## When to Use
 
@@ -47,28 +47,26 @@ Execute comprehensive test suite for all gh CLI search skills using a **Python t
 ## Architecture
 
 ```
-python3 testing/scripts/run-all-tests.py
+python3 testing/scripts/run-all-tests.py [--workers N] [--no-review]
   ├─> Parse all scenario files in testing/scenarios/
-  ├─> For each test scenario:
-  │   ├─> Execute: ./testing/scripts/run-single-test.sh "<user-request>"
+  ├─> For each test group (6 groups total):
+  │   ├─> Submit tests to parallel worker pool (default: 4 workers)
+  │   ├─> Each worker executes: ./testing/scripts/run-single-test.sh "<user-request>"
   │   │   └─> claude -p "<user-request>" --allowedTools "Read,Skill"
   │   ├─> Extract command from response
   │   ├─> Validate against expected criteria
   │   └─> Write test report
   ├─> Generate group reports (per scenario file)
-  └─> Generate master report (all tests)
+  ├─> Generate master report (all tests)
+  └─> Automatically invoke test-reviewer agent (headless)
+      ├─> Read master report
+      ├─> Analyze group reports
+      ├─> Sample individual test failures (3-5 examples)
+      ├─> Identify failure patterns
+      ├─> Perform root cause analysis
+      └─> Create REVIEWER-NOTES.md with recommendations
 
-THEN (optional but recommended):
-
-test-reviewer agent (agents/test-reviewer.md)
-  ├─> Read master report
-  ├─> Analyze group reports
-  ├─> Sample individual test failures (3-5 examples)
-  ├─> Identify failure patterns
-  ├─> Perform root cause analysis
-  └─> Create REVIEWER-NOTES.md with recommendations
-
-Total: 80 tests across 6 groups (sequential execution) + optional review
+Total: 80 tests across 6 groups (parallel execution with 4 workers) + automatic review
 ```
 
 ### Test Groups
@@ -85,11 +83,13 @@ Total: 80 tests across 6 groups (sequential execution) + optional review
 **run-all-tests.py:**
 - Discovers all test scenario files in `testing/scenarios/`
 - Parses test definitions from markdown
-- Executes each test via `run-single-test.sh`
+- Executes tests in parallel via `run-single-test.sh` (configurable workers)
 - Validates responses against expected criteria
 - Generates 3-level reports (master, group, individual)
 - Tracks timing and pass/fail statistics
 - Writes to: `./testing/reports/yyyy-mm-dd_{COUNT}/`
+- Automatically invokes test-reviewer agent as headless agent
+- Supports command-line flags: `--workers N`, `--no-review`
 
 **run-single-test.sh:**
 - Accepts user request as argument
@@ -109,18 +109,35 @@ Execute the Python test orchestrator:
 python3 testing/scripts/run-all-tests.py
 ```
 
+**Options:**
+- `--workers N` - Number of parallel workers (default: 4)
+- `--no-review` - Skip automatic test-reviewer agent execution
+
+**Examples:**
+```bash
+# Run with default settings (4 workers, with review)
+python3 testing/scripts/run-all-tests.py
+
+# Run with 8 parallel workers
+python3 testing/scripts/run-all-tests.py --workers 8
+
+# Run without automatic review
+python3 testing/scripts/run-all-tests.py --no-review
+```
+
 **Expected output:**
 ```
 GH CLI Search Skills - Test Suite Execution
 ============================================================
 Start time: 2025-11-15 09:00:00
+Parallel workers: 4
 
 Report directory: /home/aaddrick/source/gh-cli-search/testing/reports/2025-11-15_5
 
 Processing gh-cli-setup-tests...
   Found 10 tests
-  Running Test 1: Installation Check Command... PASS
-  Running Test 2: Authentication Command... PASS
+  Test 1: Installation Check Command... PASS
+  Test 2: Authentication Command... PASS
   ...
   Group complete: 10/10 passed
 
@@ -134,64 +151,39 @@ Total Tests: 80
 Passed: 59 (73.8%)
 Failed: 21
 
-Execution Time: 480.5 seconds (8.0 minutes)
-Average: 6.0 seconds per test
+Execution Time: 180.5 seconds (3.0 minutes)
+Average: 2.3 seconds per test
 
 Report location: ./testing/reports/2025-11-15_5/REPORT.md
+
+============================================================
+RUNNING TEST REVIEWER AGENT
+============================================================
+Analyzing results in: /home/aaddrick/source/gh-cli-search/testing/reports/2025-11-15_5
+
+✓ Test reviewer completed successfully
+
+Reviewer notes: ./testing/reports/2025-11-15_5/REVIEWER-NOTES.md
 ```
 
 ### 2. Review Results
 
-Check the master report at:
+The test suite automatically generates multiple reports:
+
+**Master Report:**
 ```
 ./testing/reports/yyyy-mm-dd_{COUNT}/REPORT.md
 ```
-
-This contains:
+Contains:
 - Overall pass/fail summary
 - Results by group
 - Failed tests detail
-- Recommendations
 
-### 3. Run Test Reviewer (Recommended)
-
-**After test suite completes**, dispatch a test-reviewer agent to analyze results and produce actionable recommendations.
-
-The test-reviewer will:
-- Identify failure patterns across all tests
-- Perform root cause analysis
-- Distinguish between skill issues, test issues, agent behavior issues, and infrastructure issues
-- Provide specific, prioritized recommendations
-- Create `REVIEWER-NOTES.md` with comprehensive analysis
-
-**How to invoke:**
-
-Use the Task tool with `subagent_type: general-purpose`:
-
-```
-Execute the test-reviewer agent to analyze test suite results.
-
-The test-reviewer agent instructions are located at: agents/test-reviewer.md
-
-Follow all instructions to:
-1. Find the latest test report (identify the YYYY-MM-DD_N directory)
-2. Read and analyze the master report
-3. Review group reports for failing groups
-4. Sample individual test failures (3-5 representative examples)
-5. Identify failure patterns and root causes
-6. Create REVIEWER-NOTES.md with comprehensive analysis
-
-The agent should provide specific, actionable recommendations but NOT make any changes to skills or tests.
-
-Report back when REVIEWER-NOTES.md has been created.
-```
-
-**Expected output location:**
+**Reviewer Analysis (Automatically Generated):**
 ```
 ./testing/reports/yyyy-mm-dd_{COUNT}/REVIEWER-NOTES.md
 ```
-
-**What the review contains:**
+Contains:
 - Executive summary with production-readiness assessment
 - Results overview table with status indicators (✅/⚠️/❌)
 - Failure patterns with root causes and evidence
@@ -199,11 +191,16 @@ Report back when REVIEWER-NOTES.md has been created.
 - Prioritized recommendations (High/Medium/Low)
 - Next steps for skill improvements
 
-**When to use test-reviewer:**
-- After every full test suite run (to track improvements)
-- Before making skill changes (to understand what needs fixing)
-- When pass rate is below target (to identify root causes)
-- Before releasing skills to production (to validate readiness)
+The test-reviewer agent runs automatically after test execution completes. It:
+- Identifies failure patterns across all tests
+- Performs root cause analysis
+- Distinguishes between skill issues, test issues, agent behavior issues, and infrastructure issues
+- Provides specific, prioritized recommendations
+
+**To skip automatic review:**
+```bash
+python3 testing/scripts/run-all-tests.py --no-review
+```
 
 ## Report Structure
 
@@ -222,18 +219,19 @@ Report back when REVIEWER-NOTES.md has been created.
 **Generated by:** run-all-tests.py
 **Contents:** Test details, full response, validation results, pass/fail reason
 
-### Optional: Reviewer Analysis
+### Level 4: Reviewer Analysis (Automatic)
 **Location:** `./testing/reports/yyyy-mm-dd_{COUNT}/REVIEWER-NOTES.md`
-**Generated by:** test-reviewer agent (when invoked)
+**Generated by:** test-reviewer agent (automatically invoked as headless agent)
 **Contents:** Failure patterns, root cause analysis, prioritized recommendations, next steps
 
 ## Key Principles
 
-### Sequential Execution
-- Tests run one at a time for clean results
+### Parallel Execution
+- Tests run in parallel worker pools (default: 4 workers)
 - Each test gets fresh Claude session
 - No shared context between tests
-- Predictable timing (~6s per test)
+- Significantly faster than sequential (~2-3 minutes vs ~8 minutes)
+- Configurable via `--workers` flag
 
 ### Authentic Testing
 - Test subjects receive ONLY user requests (via run-single-test.sh)

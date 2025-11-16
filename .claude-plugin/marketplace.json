@@ -1,0 +1,33 @@
+{
+  "name": "helpful-tools-marketplace",
+  "owner": {
+    "name": "Aaddrick Williams",
+    "email": "aaddrick@gmail.com",
+    "url": "https://github.com/aaddrick"
+  },
+  "metadata": {
+    "description": "A marketplace for helpful Claude Code plugins",
+    "version": "1.0.1"
+  },
+  "plugins": [
+    {
+      "name": "gh-cli-search",
+      "source": {
+        "source": "github",
+        "repo": "aaddrick/gh-cli-search"
+      },
+      "description": "Comprehensive GitHub CLI search commands and troubleshooting",
+      "version": "1.2.0",
+      "author": {
+        "name": "Aaddrick Williams",
+        "url": "https://github.com/aaddrick"
+      },
+      "homepage": "https://github.com/aaddrick/gh-cli-search",
+      "repository": "https://github.com/aaddrick/gh-cli-search",
+      "license": "MIT",
+      "keywords": ["github", "gh", "cli", "search", "git", "code-search", "issues", "pull-requests", "repositories", "commits"],
+      "category": "developer-tools",
+      "strict": false
+    }
+  ]
+}

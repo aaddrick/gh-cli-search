@@ -109,7 +109,7 @@
 
 **Description:** Diagnose insufficient permissions
 
-**User Request:** "I'm getting HTTP 403 errors, what's wrong?"
+**User Request:** "I'm getting HTTP 403 errors when using `gh search issues`, what's wrong?"
 
 **Expected Criteria:**
 - Mentions insufficient token scopes

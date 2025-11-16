@@ -9,6 +9,13 @@ description: Use when gh CLI is not installed, not configured, or authentication
 
 This skill helps diagnose and fix GitHub CLI (`gh`) installation, configuration, and authentication issues.
 
+**IMPORTANT: When providing installation instructions, always:**
+- Explain the recommended method (e.g., "Homebrew is the recommended way to install on macOS")
+- Provide the actual command
+- Mention alternative installation methods
+- Add context about what the command does
+- Do NOT just return a bare command without explanation
+
 ## When to Use
 
 Use this skill when:

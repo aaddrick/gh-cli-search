@@ -35,7 +35,7 @@
 
 **Description:** Search commit messages
 
-**User Request:** "Find commits mentioning 'bug fix'"
+**User Request:** "Find commits mentioning 'bug fix' in microsoft/vscode repository"
 
 **Expected Criteria:**
 - Query quoted: `"bug fix"`
@@ -49,7 +49,7 @@
 
 **Description:** Exclude commits from specific author
 
-**User Request:** "Find commits NOT from dependabot"
+**User Request:** "Find commits NOT from dependabot across repos"
 
 **Expected Criteria:**
 - Uses `--` flag
@@ -64,11 +64,11 @@
 
 **Description:** Find only merge commits
 
-**User Request:** "Find merge commits in the repository"
+**User Request:** "Find merge commits in golang/go repository"
 
 **Expected Criteria:**
-- Merge flag: `--merge`
-- Optional: repository scope
+- Merge filter: `--merge` flag OR query includes `merge:true` or keyword `merge` (both are valid)
+- Repository scope: `--repo golang/go` OR query includes `repo:golang/go`
 
 **Platform:** All
 
@@ -92,10 +92,10 @@
 
 **Description:** Find commits by author email
 
-**User Request:** "Find commits from user@example.com"
+**User Request:** "Find commits from noreply@github.com across GitHub"
 
 **Expected Criteria:**
-- Author email: `--author-email user@example.com`
+- Author email: `--author-email noreply@github.com`
 - Email address
 
 **Platform:** All
@@ -138,7 +138,7 @@
 
 **Description:** Filter by committer (not author)
 
-**User Request:** "Find commits where octocat was the committer"
+**User Request:** "Find commits where octocat was the committer across GitHub"
 
 **Expected Criteria:**
 - Committer: `--committer octocat`

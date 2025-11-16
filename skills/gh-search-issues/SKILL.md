@@ -1,23 +1,42 @@
 ---
 name: gh-search-issues
-description: Use when searching GitHub issues - provides syntax for filtering by labels, state, assignees, authors, comments, reactions, dates, and includes option to search pull requests
+description: Use when searching GitHub issues ACROSS REPOSITORIES or organizations - provides syntax for filtering by labels, state, assignees, authors, comments, reactions, dates. For current repo issues, use gh issue list instead.
 ---
 
 # GitHub CLI: Search Issues
 
 ## Overview
 
-Search for issues on GitHub using `gh search issues`. Add `--include-prs` flag to also search pull requests.
+Search for issues **across GitHub repositories** using `gh search issues`. Add `--include-prs` flag to also search pull requests.
 
-## When to Use
+## ⚠️ CRITICAL: Search vs List Commands
 
-Use this skill when:
-- Finding issues by label, state, or assignee
-- Searching for issues by author or mentioned user
-- Filtering by comment/reaction counts
-- Finding issues by date ranges
-- Need to include PRs in search (use `--include-prs`)
-- Need to exclude certain results (requires `--` flag)
+**`gh search issues`** - GitHub-wide search (THIS SKILL):
+- Searches across **multiple repositories** or organizations
+- Searches in **specific repos outside your current directory**
+- Uses GitHub's search query syntax with qualifiers
+- Examples: "Find issues in the microsoft organization", "Search for bugs in kubernetes repos"
+
+**`gh issue list`** - Current repository only (NOT THIS SKILL):
+- Lists issues in **your current working directory's repo**
+- Uses simple flag-based filtering
+- Examples: "Show my issues in this repo", "List open bugs here"
+
+**When user says "my issues" or "issues here" → Use `gh issue list` (NOT this skill)**
+**When user specifies repo/org or cross-repo search → Use `gh search issues` (THIS skill)**
+
+## When to Use This Skill
+
+Use this skill when the user explicitly indicates:
+- Searching across **multiple repositories or organizations**
+- Searching in a **specific repo** (e.g., "in kubernetes/kubernetes")
+- Cross-GitHub searches (e.g., "all my open issues across GitHub")
+- Complex queries needing search qualifiers (e.g., "comments>50 across microsoft repos")
+
+**DO NOT use this skill when:**
+- User asks about "issues in this repo" or "my issues here"
+- No repo/org is specified and context is clearly current repository
+- Use `gh issue list` for current repo operations instead
 
 ## Syntax
 
@@ -94,19 +113,104 @@ gh search issues [<query>] [flags]
 
 `assignees`, `author`, `authorAssociation`, `body`, `closedAt`, `commentsCount`, `createdAt`, `id`, `isLocked`, `isPullRequest`, `labels`, `number`, `repository`, `state`, `title`, `updatedAt`, `url`
 
+## Exclusion Syntax (Critical!)
+
+When using inline query exclusions (negations with `-`), you MUST use the `--` separator:
+
+✅ Correct: `gh search issues -- "search-terms -qualifier:value"`
+❌ Wrong: `gh search issues "search-terms" --flag=-value`
+❌ Wrong: `gh search issues "search-terms" --flag=!value`
+❌ Wrong: `gh search issues --label!=bug`
+
+**Examples:**
+- `gh search issues -- "bug -label:wontfix"` (exclude label)
+- `gh search issues -- "crash -assignee:olduser"` (exclude assignee)
+- `gh search issues -- "error -author:bot"` (exclude author)
+- `gh search issues -- "performance -milestone:v1.0"` (exclude milestone)
+
+**Why the `--` separator is required:**
+The `--` tells the shell to stop parsing flags and treat everything after it as arguments. Without it, `-qualifier:value` inside quotes may be misinterpreted.
+
 ## Critical Syntax Rules
 
-### 1. Exclusions Require `--`
+### When to Use Flag Syntax vs Query Syntax
 
-**Unix/Linux/Mac:**
-```bash
-gh search issues -- "bug -label:duplicate"
+**Decision Tree:**
+```
+Does your search include:
+  - Any exclusions (NOT, minus, without, except)?  → Use Query Syntax with `--`
+  - Complex boolean logic (OR, AND)?              → Use Query Syntax with `--`
+
+Otherwise:
+  - Simple positive filters only?                  → Use Flag Syntax
 ```
 
-**PowerShell:**
+**Flag Syntax** (for positive filters):
+```bash
+gh search issues "bug" --label urgent --state open
+```
+
+**Query Syntax with `--`** (required for exclusions):
+```bash
+gh search issues -- "bug -label:duplicate -label:wontfix"
+```
+
+**⚠️ NEVER mix both syntaxes in a single command!**
+
+### 1. Exclusions and Negations
+
+**CRITICAL:** When excluding results, you MUST use query syntax with the `--` separator.
+
+#### Exclusion Syntax Rules:
+1. Use the `--` separator before your query
+2. Use `-qualifier:value` format (dash prefix for negation)
+3. Quote the entire query string
+
+#### Examples:
+
+**Single exclusion:**
+```bash
+# Exclude specific label
+gh search issues -- "bug -label:duplicate"
+
+# Exclude specific assignee
+gh search issues -- "crash -assignee:olduser"
+```
+
+**Multiple exclusions:**
+```bash
+# Exclude multiple labels
+gh search issues -- "bug -label:duplicate -label:wontfix"
+
+# Exclude author and label
+gh search issues -- "performance -author:bot -label:invalid"
+```
+
+**Combine with positive filters using flags:**
+```bash
+# Wrong - mixing syntaxes:
+gh search issues "bug" --state open -label:duplicate  # ❌
+
+# Correct - use query syntax for everything when excluding:
+gh search issues -- "bug state:open -label:duplicate"  # ✅
+```
+
+**PowerShell exclusions:**
 ```powershell
+# Use --% to prevent PowerShell parsing
 gh --% search issues -- "bug -label:duplicate"
 ```
+
+#### Common Exclusion Patterns:
+
+| User Request | Command |
+|--------------|---------|
+| "Find bugs but not duplicates" | `gh search issues -- "bug -label:duplicate"` |
+| "Issues not assigned to anyone" | `gh search issues -- "enhancement -assignee:*"` (use `--no-assignee` instead) |
+| "Open issues excluding specific label" | `gh search issues -- "state:open -label:wontfix"` |
+| "Issues excluding multiple labels" | `gh search issues -- "crash -label:duplicate -label:invalid"` |
+| "Issues not in milestone" | `gh search issues -- "bug -milestone:v1.0"` |
+| "Issues not by bot authors" | `gh search issues -- "error -author:dependabot -author:renovate"` |
 
 ### 2. Special Values
 
@@ -134,51 +238,54 @@ gh search issues "performance" --comments ">10"
 
 ## Common Use Cases
 
-**Find your open issues:**
+**Find your open issues across all of GitHub:**
 ```bash
 gh search issues --author @me --state open
 ```
 
-**Find unassigned bugs:**
+**Find unassigned bugs in a specific org:**
 ```bash
-gh search issues --label bug --no-assignee --state open
+gh search issues --label bug --no-assignee --state open --owner kubernetes
 ```
 
-**Find highly discussed issues:**
+**Find highly discussed issues in a specific repo:**
 ```bash
-gh search issues --comments ">50" --state open --repo owner/repo
+gh search issues --comments ">50" --state open --repo microsoft/vscode
 ```
 
-**Find stale issues:**
+**Find stale issues across multiple repos:**
 ```bash
-gh search issues --state open --updated "<2023-01-01"
+gh search issues --state open --updated "<2023-01-01" --owner myorg
 ```
 
-**Search issues AND PRs:**
+**Search issues AND PRs in an organization:**
 ```bash
-gh search issues "authentication" --include-prs --state open
+gh search issues "authentication" --include-prs --state open --owner github
 ```
 
-**Exclude specific labels:**
+**Exclude specific labels in cross-repo search:**
 ```bash
-gh search issues -- "crash -label:duplicate -label:wontfix"
+gh search issues -- "crash -label:duplicate -label:wontfix" --repo cli/cli
 ```
 
-**Find issues in milestone:**
+**Find issues in milestone across repos:**
 ```bash
-gh search issues --milestone v2.0 --state open
+gh search issues --milestone v2.0 --state open --owner golang
 ```
 
-**Find issues by title only:**
+**Find issues by title only in specific language repos:**
 ```bash
-gh search issues "error in:title" --state open
+gh search issues "error in:title" --state open --language rust
 ```
 
 ## Common Mistakes
 
 | Mistake | Problem | Fix |
 |---------|---------|-----|
+| `--label="NOT duplicate"` or `--assignee=-bot` | Flag syntax doesn't support negation | Use query: `-- "-label:duplicate"` or `-- "-assignee:bot"` |
 | `gh search issues bug -label:duplicate` | `-label` interpreted as flag | Use `--`: `-- "bug -label:duplicate"` |
+| `"bug NOT label:duplicate"` | `NOT` keyword doesn't work | Use `-`: `-- "bug -label:duplicate"` |
+| Mixing syntaxes: `--state open "bug -label:dup"` | Can't mix flags with query qualifiers | Use query for all: `-- "bug state:open -label:dup"` |
 | `--assignee @username` | Invalid `@` prefix | Use `@me` or drop `@`: `--assignee username` |
 | Not quoting comparisons | Shell interprets `>` | Quote: `--comments ">10"` |
 | `label:"bug fix"` outside quotes | Shell parsing error | Quote query: `'label:"bug fix"'` |

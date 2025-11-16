@@ -4,14 +4,14 @@
 
 **Description:** Find open issues without a specific label
 
-**User Request:** "Find my open issues that are NOT labeled as bug"
+**User Request:** "Find open issues authored by octocat across all GitHub that are NOT labeled as bug"
 
 **Expected Criteria:**
 - Uses `--` flag before query
-- Query contains `is:open`, `author:@me`, `-label:bug`
-- Special value `@me` used correctly
+- Query contains `is:open`, `author:octocat`, `-label:bug`
+- Username without `@` prefix (only @me uses @)
 - Exclusion `-label:bug` inside quotes
-- Format: `gh search issues -- "is:open author:@me -label:bug"`
+- Format: `gh search issues -- "is:open author:octocat -label:bug"`
 
 **Platform:** Unix/Linux/Mac
 
@@ -21,7 +21,7 @@
 
 **Description:** Exclusion on PowerShell requires `--%`
 
-**User Request:** "On PowerShell, find issues NOT labeled as duplicate"
+**User Request:** "On PowerShell, find issues across GitHub NOT labeled as duplicate"
 
 **Expected Criteria:**
 - Command starts with `gh --%`
@@ -37,7 +37,7 @@
 
 **Description:** Current user syntax with @me
 
-**User Request:** "Find issues assigned to me that are open"
+**User Request:** "Search GitHub for 'help-wanted' issues assigned to me across multiple open source projects"
 
 **Expected Criteria:**
 - Uses `--assignee @me` OR `assignee:@me` in query
@@ -52,7 +52,7 @@
 
 **Description:** Should NOT use @ with specific username
 
-**User Request:** "Find issues authored by octocat"
+**User Request:** "Search for authentication issues authored by octocat in Python projects across GitHub"
 
 **Expected Criteria:**
 - Uses `--author octocat` (no @)
@@ -67,7 +67,7 @@
 
 **Description:** Labels containing spaces need inner quotes
 
-**User Request:** "Find issues with 'bug fix' label"
+**User Request:** "Search for memory leak issues labeled 'bug fix' across GitHub repositories"
 
 **Expected Criteria:**
 - Query contains `label:"bug fix"`
@@ -82,7 +82,7 @@
 
 **Description:** Filter by multiple labels
 
-**User Request:** "Find issues labeled as bug and urgent"
+**User Request:** "Find issues labeled as bug and urgent across all repositories"
 
 **Expected Criteria:**
 - Uses `--label bug,urgent` OR
@@ -97,7 +97,7 @@
 
 **Description:** Filter by number of comments with comparison
 
-**User Request:** "Find highly discussed issues with more than 50 comments"
+**User Request:** "Find highly discussed issues with more than 50 comments across GitHub"
 
 **Expected Criteria:**
 - Comment filter with quotes: `--comments ">50"`
@@ -112,7 +112,7 @@
 
 **Description:** Filter by creation date range
 
-**User Request:** "Find issues created in 2024"
+**User Request:** "Search for Docker issues created in 2024 across all of GitHub"
 
 **Expected Criteria:**
 - Date filter: `--created "2024-01-01..2024-12-31"`
@@ -128,12 +128,14 @@
 
 **Description:** Search both issues and PRs
 
-**User Request:** "Search for authentication issues and pull requests"
+**User Request:** "Search for authentication issues and pull requests across all repos"
 
 **Expected Criteria:**
 - Query includes `"authentication"`
-- Includes `--include-prs` flag
-- Without flag, only returns issues
+- Either uses `--include-prs` flag OR runs separate commands for issues and PRs
+- Acceptable: `gh search issues "authentication" --include-prs`
+- Also acceptable: `gh search issues "authentication" && gh search prs "authentication"`
+- Both approaches produce equivalent results
 
 **Platform:** All
 
@@ -143,7 +145,7 @@
 
 **Description:** Restrict search to title field
 
-**User Request:** "Find issues with crash in the title"
+**User Request:** "Find issues with crash in the title across GitHub"
 
 **Expected Criteria:**
 - Query uses `"crash in:title"` OR
@@ -158,7 +160,7 @@
 
 **Description:** Search issues in specific repository
 
-**User Request:** "Find open bugs in the cli/cli repository"
+**User Request:** "Search for authentication bugs across CLI tool repositories on GitHub"
 
 **Expected Criteria:**
 - Query or flag includes repository scope
@@ -174,7 +176,7 @@
 
 **Description:** Find issues assigned to specific user
 
-**User Request:** "Find issues assigned to octocat"
+**User Request:** "Search for performance issues assigned to octocat in web frameworks across GitHub"
 
 **Expected Criteria:**
 - Assignee: `--assignee octocat`
@@ -189,12 +191,11 @@
 
 **Description:** Find unassigned issues
 
-**User Request:** "Find open issues that are unassigned"
+**User Request:** "Find open issues that are unassigned across GitHub"
 
 **Expected Criteria:**
-- Uses `--no-assignee` flag OR
-- Query includes `no:assignee`
-- State filter for open
+- Uses `--no-assignee` flag OR query includes `no:assignee` (both are valid)
+- State filter for open (uses `is:open` or `--state open`)
 
 **Platform:** All
 
@@ -204,7 +205,7 @@
 
 **Description:** Filter by milestone
 
-**User Request:** "Find issues in the v2.0 milestone"
+**User Request:** "Find issues in the v2.0 milestone across all repos"
 
 **Expected Criteria:**
 - Milestone filter: `--milestone v2.0` OR
@@ -218,7 +219,7 @@
 
 **Description:** Search term with spaces must be quoted
 
-**User Request:** "Search for memory leak issues"
+**User Request:** "Search for memory leak issues across all of GitHub"
 
 **Expected Criteria:**
 - Query quoted: `"memory leak"`
@@ -233,7 +234,7 @@
 
 **Description:** Filter by reaction count
 
-**User Request:** "Find popular issues with more than 10 reactions"
+**User Request:** "Find popular issues with more than 10 reactions across repos"
 
 **Expected Criteria:**
 - Reactions filter with quotes: `--reactions ">10"`
@@ -248,7 +249,7 @@
 
 **Description:** Find stale issues not updated recently
 
-**User Request:** "Find open issues not updated since January 1, 2023"
+**User Request:** "Find open issues not updated since January 1, 2023 across all GitHub"
 
 **Expected Criteria:**
 - Updated filter: `--updated "<2023-01-01"`
@@ -264,7 +265,7 @@
 
 **Description:** Exclude multiple labels with exclusions
 
-**User Request:** "Find issues NOT labeled as duplicate or wontfix"
+**User Request:** "Find issues NOT labeled as duplicate or wontfix across GitHub"
 
 **Expected Criteria:**
 - Uses `--` flag for exclusions
@@ -280,12 +281,12 @@
 
 **Description:** Combine author and mentions filters
 
-**User Request:** "Find issues I authored that mention octocat"
+**User Request:** "Find issues authored by torvalds that mention octocat across all repositories"
 
 **Expected Criteria:**
-- Author: `--author @me` or `author:@me`
+- Author: `--author torvalds` or `author:torvalds`
 - Mentions: `--mentions octocat` or `mentions:octocat`
-- No @ on specific username
+- No `@` on specific usernames (only for @me)
 
 **Platform:** All
 
@@ -295,7 +296,7 @@
 
 **Description:** Request specific JSON fields
 
-**User Request:** "Search for bugs and output JSON with number, title, and state"
+**User Request:** "Search for bugs across all repos and output JSON with number, title, and state"
 
 **Expected Criteria:**
 - Query or label filter for "bug"
